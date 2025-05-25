@@ -116,7 +116,7 @@ export default function FreightCalculator() {
 
         // Send to API using try/catch
         try {
-            const response = await axios.post("http://13.233.2.26:3030/api/v1/test/calculate", outputData);
+            const response = await axios.post("https://t443nx1f3l.execute-api.ap-south-1.amazonaws.com//api/v1/test/calculate", outputData);
             setApiResponse(response.data.data);
         } catch (error) {
             console.error("API Error:", error.response?.data || error.message);
