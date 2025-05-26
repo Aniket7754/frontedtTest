@@ -21,19 +21,19 @@ export default function FreightCalculator() {
             type: "20ft Standard Container",
             cbm: 28,
             maxWeight: 28000,
-            image: "/20ft.jfif"
+            image: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.indiamart.com%2Fproddetail%2F20-feet-freight-shipping-container-13177795048.html&psig=AOvVaw1kKPaBqWM6nIUh480Iwtr6&ust=1748296248181000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCIDMvJjNv40DFQAAAAAdAAAAABAE"
         },
         {
             type: "40ft High Cube Container",
             cbm: 58,
             maxWeight: 26500,
-            image: "/40ft.webp"
+            image: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.indiamart.com%2Fproddetail%2Fshipping-cargo-container-8964034455.html&psig=AOvVaw1kKPaBqWM6nIUh480Iwtr6&ust=1748296248181000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCIDMvJjNv40DFQAAAAAdAAAAABAS"
         },
         {
             type: "45ft High Cube Container",
             cbm: 76,
             maxWeight: 29000,
-            image: "/45ft.jfif"
+            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrVQDXECYs2biJaP89dVL0iPmROm3R8yYOhw&s"
         }
     ];
 
@@ -116,7 +116,7 @@ export default function FreightCalculator() {
 
         // Send to API using try/catch
         try {
-            const response = await axios.post("https://t443nx1f3l.execute-api.ap-south-1.amazonaws.com/api/v1/test/calculate", outputData);
+            const response = await axios.post("https://sandbox.alfennzo.com/api/v1/user/calculate", outputData);
             setApiResponse(response.data.data);
         } catch (error) {
             console.error("API Error:", error.response?.data || error.message);
