@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from 'axios';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import Container3DView from "./Container3DView";
 
 export default function FreightCalculator() {
     const [products, setProducts] = useState([{ productName: "", dimensions: { L: "", w: "", h: "" }, weight: "", quantity: 1, stackable: false, fragile: false }]);
@@ -21,22 +22,34 @@ export default function FreightCalculator() {
             type: "20ft Standard Container",
             cbm: 28,
             maxWeight: 28000,
-            image: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.indiamart.com%2Fproddetail%2F20-feet-freight-shipping-container-13177795048.html&psig=AOvVaw1kKPaBqWM6nIUh480Iwtr6&ust=1748296248181000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCIDMvJjNv40DFQAAAAAdAAAAABAE"
+            image: "https://alfennzo-production.s3.ap-south-1.amazonaws.com/Support_Images/images%20%281%29.jfif"
         },
         {
             type: "40ft High Cube Container",
             cbm: 58,
             maxWeight: 26500,
-            image: "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.indiamart.com%2Fproddetail%2Fshipping-cargo-container-8964034455.html&psig=AOvVaw1kKPaBqWM6nIUh480Iwtr6&ust=1748296248181000&source=images&cd=vfe&opi=89978449&ved=0CBQQjRxqFwoTCIDMvJjNv40DFQAAAAAdAAAAABAS"
+            image: "https://alfennzo-production.s3.ap-south-1.amazonaws.com/Support_Images/images%20%282%29.jfif"
         },
         {
             type: "45ft High Cube Container",
             cbm: 76,
             maxWeight: 29000,
-            image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRrVQDXECYs2biJaP89dVL0iPmROm3R8yYOhw&s"
+            image: "https://alfennzo-production.s3.ap-south-1.amazonaws.com/Support_Images/800px-Container_01_KMJ.jpg"
         }
     ];
 
+    const getSelectedContainerDimensions = (type) => {
+        switch (type) {
+            case "20ft Standard Container":
+                return { L: 589, W: 235, H: 239 };
+            case "40ft High Cube Container":
+                return { L: 1203, W: 235, H: 269 };
+            case "45ft High Cube Container":
+                return { L: 1355, W: 235, H: 269 };
+            default:
+                return { L: 589, W: 235, H: 239 };
+        }
+    };
 
     const addProduct = () => {
         setProducts([...products, { productName: "", dimensions: { L: "", w: "", h: "" }, weight: "", quantity: 1, stackable: false, fragile: false }]);
@@ -108,15 +121,17 @@ export default function FreightCalculator() {
             Items: formattedItems,
             containerweight: totalW.toFixed(1),
             originport: route.origin,
-            destinationport: route.destination
+            destinationport: route.destination,
+            containertype: selectedContainerType  // ✅ send container type
         };
+
 
         console.log("== Final Structured Output ==");
         console.log(outputData);
 
         // Send to API using try/catch
         try {
-            const response = await axios.post("https://sandbox.alfennzo.com/api/v1/user/calculate", outputData);
+            const response = await axios.post("http://localhost:3030/api/v1/user/calculate", outputData);
             setApiResponse(response.data.data);
         } catch (error) {
             console.error("API Error:", error.response?.data || error.message);
@@ -371,6 +386,24 @@ export default function FreightCalculator() {
                     </button>
                 </div>
             </div>
+            {selectedContainerType && (
+                <div className="bg-white rounded-xl shadow p-4 my-6 border-t-4 border-blue-600">
+                    <h2 className="text-lg font-semibold mb-4 text-blue-800">
+                        4. 3D Container Visualization
+                    </h2>
+                    <Container3DView
+                        products={products.map((p) => ({
+                            ...p,
+                            dimensions: {
+                                L: parseFloat(p.dimensions.L),
+                                w: parseFloat(p.dimensions.w),
+                                h: parseFloat(p.dimensions.h),
+                            },
+                        }))}
+                        containerDimensions={getSelectedContainerDimensions(selectedContainerType)}
+                    />
+                </div>
+            )}
 
             {/* Optimization Result */}
             <div className="bg-white rounded-xl shadow p-4 border-t-4 border-green-600">
@@ -383,28 +416,60 @@ export default function FreightCalculator() {
                         ))}
                     </ul>
                 </div>
-
                 {apiResponse && (
-                    <div className="bg-white rounded-xl shadow p-4 border-t-4 border-green-600 mt-6">
-                        <h2 className="text-lg font-semibold mb-4">API Calculation Results</h2>
+                    <div className="bg-white rounded-xl shadow p-6 border border-gray-300 mt-6">
+                        <h2 className="text-xl font-semibold text-gray-800 mb-4">Freight Charges ({route.origin} → {route.destination})</h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                            <p><strong>Container Weight:</strong> {apiResponse.containerweight} kg</p>
-                            <p><strong>Total CBM:</strong> {apiResponse.totalCBM}</p>
-                            <p><strong>Total Weight:</strong> {apiResponse.totalWeight} kg</p>
-                            <p><strong>Remaining Weight:</strong> {apiResponse.remainingWeight} kg</p>
-                            <p><strong>Fuel Charge:</strong> ₹{apiResponse.fuelCharge}</p>
-                            <p><strong>Port Fees:</strong> ₹{apiResponse.portFees}</p>
-                            <p><strong>Documentation Fees:</strong> ₹{apiResponse.documentationFees}</p>
-                            <p><strong>Total Charges:</strong> ₹{apiResponse.totalCharges}</p>
+                        <div className="text-sm text-gray-700 mb-3">
+                            <p><strong>Container Type:</strong> <span className="text-blue-600 font-semibold">{apiResponse.containertype}</span></p>
+                            <p><strong>Total CBM:</strong> <span className="text-blue-600 font-semibold">{apiResponse.totalCBM}</span></p>
+                            <p><strong>Total Weight:</strong> <span className="text-blue-600 font-semibold">{apiResponse.totalWeight} kg</span></p>
                         </div>
 
-                        <div className="mt-4">
-                            <h3 className="font-semibold mb-2">Submitted Items:</h3>
-                            <ul className="list-disc text-xs pl-5 text-gray-700">
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-sm border-collapse">
+                                <thead>
+                                    <tr className="bg-gray-100 text-left">
+                                        <th className="px-4 py-2 border">Container Type</th>
+                                        <th className="px-4 py-2 border">Count</th>
+                                        <th className="px-4 py-2 border">Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {apiResponse.containers?.map((c, i) => (
+                                        <tr key={i} className="hover:bg-gray-50">
+                                            <td className="px-4 py-2 border">{c.type}</td>
+                                            <td className="px-4 py-2 border">{c.count}</td>
+                                            <td className="px-4 py-2 border">${parseFloat(c.price).toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                    <tr className="bg-gray-50">
+                                        <td className="px-4 py-2 border" colSpan={2}>Fuel Surcharge</td>
+                                        <td className="px-4 py-2 border">${apiResponse.fuelCharge}</td>
+                                    </tr>
+                                    <tr className="bg-gray-50">
+                                        <td className="px-4 py-2 border" colSpan={2}>Port Fees</td>
+                                        <td className="px-4 py-2 border">${apiResponse.portFees}</td>
+                                    </tr>
+                                    <tr className="bg-gray-50">
+                                        <td className="px-4 py-2 border" colSpan={2}>Documentation</td>
+                                        <td className="px-4 py-2 border">${apiResponse.documentationFees}</td>
+                                    </tr>
+                                    <tr className="bg-gray-200 font-bold">
+                                        <td className="px-4 py-2 border" colSpan={2}>Total Estimated Cost</td>
+                                        <td className="px-4 py-2 border text-green-700">${apiResponse.totalCharges}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="mt-6">
+                            <h3 className="font-semibold text-gray-700 mb-2">Submitted Items</h3>
+                            <ul className="text-sm text-gray-600 space-y-1 pl-4 list-disc">
                                 {apiResponse.items.map((item, i) => (
                                     <li key={i}>
-                                        {item.productName} – {item.dimensions.L}×{item.dimensions.w}×{item.dimensions.h}cm, {item.weight}kg × {item.quantity} ({item.properties})
+                                        {item.productName} — {item.dimensions.L}×{item.dimensions.w}×{item.dimensions.h}cm, {item.weight}kg × {item.quantity} ({item.properties})
                                     </li>
                                 ))}
                             </ul>
